@@ -1,7 +1,7 @@
 using UnityEngine;
 using UnityEngine.XR.Interaction.Toolkit;
 
-[RequireComponent(typeof(XRSimpleInteractable))]
+[RequireComponent(typeof(XRBaseInteractable))]
 [RequireComponent(typeof(ProductData))]
 public class ProductHoverInteraction : MonoBehaviour
 {
@@ -9,26 +9,26 @@ public class ProductHoverInteraction : MonoBehaviour
     [SerializeField] private GameObject popupPrefab;
     [SerializeField] private Vector3 popupOffset = new Vector3(0, 0.3f, 0);
 
-    private XRSimpleInteractable simpleInteractable;
+    private XRBaseInteractable interactable;
     private ProductData productData;
     private GameObject currentPopup;
 
     private void Awake()
     {
-        simpleInteractable = GetComponent<XRSimpleInteractable>();
+        interactable = GetComponent<XRBaseInteractable>();
         productData = GetComponent<ProductData>();
     }
 
     private void OnEnable()
     {
-        simpleInteractable.hoverEntered.AddListener(OnHoverEntered);
-        simpleInteractable.hoverExited.AddListener(OnHoverExited);
+        interactable.hoverEntered.AddListener(OnHoverEntered);
+        interactable.hoverExited.AddListener(OnHoverExited);
     }
 
     private void OnDisable()
     {
-        simpleInteractable.hoverEntered.RemoveListener(OnHoverEntered);
-        simpleInteractable.hoverExited.RemoveListener(OnHoverExited);
+        interactable.hoverEntered.RemoveListener(OnHoverEntered);
+        interactable.hoverExited.RemoveListener(OnHoverExited);
     }
 
     private void OnHoverEntered(HoverEnterEventArgs args)
@@ -36,6 +36,7 @@ public class ProductHoverInteraction : MonoBehaviour
         // Check if it is the Right Controller (Interactor)
         // This assumes the interactor GameObject has "Right" in its name
         // Common naming: "Right Ray Interactor", "Right Controller", etc.
+
         if (args.interactorObject.transform.name.Contains("Right") || args.interactorObject.transform.parent.name.Contains("Right"))
         {
             ShowPopup();
