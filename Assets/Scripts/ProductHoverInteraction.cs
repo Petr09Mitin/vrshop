@@ -54,12 +54,22 @@ public class ProductHoverInteraction : MonoBehaviour
 
     private void ShowPopup()
     {
-        if (currentPopup != null) return; // Already showing
+        if (currentPopup != null) return;
 
         if (popupPrefab != null)
         {
-            currentPopup = Instantiate(popupPrefab, transform.position + popupOffset, Quaternion.identity);
-            
+            // Calculate position: Start at product center
+            Vector3 spawnPos = transform.position;
+
+            // Add the offset (Upwards)
+            spawnPos += popupOffset;
+
+            // OPTIONAL: Move it slightly towards the player (Camera) so it doesn't clip into shelves
+            Vector3 directionToCamera = (Camera.main.transform.position - transform.position).normalized;
+            spawnPos += directionToCamera * 0.1f; // Move 10cm towards the player
+
+            currentPopup = Instantiate(popupPrefab, spawnPos, Quaternion.identity);
+
             PopupController controller = currentPopup.GetComponent<PopupController>();
             if (controller != null)
             {
