@@ -1,86 +1,61 @@
 using UnityEngine;
+using UnityEngine.InputSystem;
 using UnityEngine.XR.Interaction.Toolkit;
 
 [RequireComponent(typeof(XRBaseInteractable))]
 [RequireComponent(typeof(ProductData))]
 public class ProductHoverInteraction : MonoBehaviour
 {
-    [Header("Popup Configuration")]
+    [Header("Visuals")]
     [SerializeField] private GameObject popupPrefab;
-    [SerializeField] private Vector3 popupOffset = new Vector3(0, 0.3f, 0);
+    [SerializeField] private Vector3 offset = new Vector3(0, 0.3f, 0);
 
+    [Header("Inputs")]
+    // Только одна кнопка - для покупки. Открытие теперь автоматическое.
+    [SerializeField] private InputActionProperty addToCartInput;
+
+    private ProductData data;
     private XRBaseInteractable interactable;
-    private ProductData productData;
-    private GameObject currentPopup;
+    private GameObject currentPopup; // Ссылка на текущее окно
 
     private void Awake()
     {
+        data = GetComponent<ProductData>();
         interactable = GetComponent<XRBaseInteractable>();
-        productData = GetComponent<ProductData>();
-    }
 
-    private void OnEnable()
-    {
         interactable.hoverEntered.AddListener(OnHoverEntered);
         interactable.hoverExited.AddListener(OnHoverExited);
     }
 
-    private void OnDisable()
+    private void Update()
     {
-        interactable.hoverEntered.RemoveListener(OnHoverEntered);
-        interactable.hoverExited.RemoveListener(OnHoverExited);
+        // Если окно открыто (значит мы смотрим на товар) И нажата кнопка покупки
+        if (currentPopup != null && addToCartInput.action != null && addToCartInput.action.WasPressedThisFrame())
+        {
+            AddToCart();
+        }
     }
 
     private void OnHoverEntered(HoverEnterEventArgs args)
     {
-        // Check if it is the Right Controller (Interactor)
-        // This assumes the interactor GameObject has "Right" in its name
-        // Common naming: "Right Ray Interactor", "Right Controller", etc.
-
-        if (args.interactorObject.transform.name.Contains("Right") || args.interactorObject.transform.parent.name.Contains("Right"))
-        {
-            ShowPopup();
-        }
+        ShowPopup();
     }
 
     private void OnHoverExited(HoverExitEventArgs args)
     {
-        // We can destroy the popup when the ray leaves
-        // Or check if it was the right hand leaving (but generally safer to just hide if any exit to avoid stuck UI)
-        if (args.interactorObject.transform.name.Contains("Right") || args.interactorObject.transform.parent.name.Contains("Right"))
-        {
-            HidePopup();
-        }
+        HidePopup();
     }
 
     private void ShowPopup()
     {
         if (currentPopup != null) return;
+        if (!popupPrefab) return;
 
-        if (popupPrefab != null)
-        {
-            // Calculate position: Start at product center
-            Vector3 spawnPos = transform.position;
+        Vector3 spawnPos = transform.position + offset + (Camera.main.transform.position - transform.position).normalized * 0.1f;
+        currentPopup = Instantiate(popupPrefab, spawnPos, Quaternion.identity);
 
-            // Add the offset (Upwards)
-            spawnPos += popupOffset;
-
-            // OPTIONAL: Move it slightly towards the player (Camera) so it doesn't clip into shelves
-            Vector3 directionToCamera = (Camera.main.transform.position - transform.position).normalized;
-            spawnPos += directionToCamera * 0.1f; // Move 10cm towards the player
-
-            currentPopup = Instantiate(popupPrefab, spawnPos, Quaternion.identity);
-
-            PopupController controller = currentPopup.GetComponent<PopupController>();
-            if (controller != null)
-            {
-                controller.SetInfo(productData.productName, productData.price, productData.description);
-            }
-        }
-        else
-        {
-            Debug.LogWarning("ProductHoverInteraction: Popup Prefab is missing!");
-        }
+        var ctrl = currentPopup.GetComponent<PopupController>();
+        if (ctrl) ctrl.SetInfo(data.productName, data.price, data.description);
     }
 
     private void HidePopup()
@@ -91,5 +66,18 @@ public class ProductHoverInteraction : MonoBehaviour
             currentPopup = null;
         }
     }
-}
 
+    private void AddToCart()
+    {
+        if (CartManager.Instance != null)
+        {
+            CartManager.Instance.AddToCart(data.productName, data.price);
+
+            // Визуальный эффект подтверждения (пульсация окна)
+            if (currentPopup != null)
+            {
+                currentPopup.transform.localScale *= 1.1f;
+            }
+        }
+    }
+}
