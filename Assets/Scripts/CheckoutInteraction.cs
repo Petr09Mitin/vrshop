@@ -1,56 +1,46 @@
 using UnityEngine;
-using UnityEngine.InputSystem;
 using UnityEngine.XR.Interaction.Toolkit;
 
-[RequireComponent(typeof(XRBaseInteractable))]
+[RequireComponent(typeof(XRSimpleInteractable))]
 public class CheckoutInteraction : MonoBehaviour
 {
     [Header("References")]
     [SerializeField] private CartUIController cartUIController;
     
-    [Header("Inputs")]
-    [SerializeField] private InputActionProperty checkoutInput;
-
-    private XRBaseInteractable interactable;
-    private bool isHovering = false;
+    private XRSimpleInteractable interactable;
 
     private void Awake()
     {
-        interactable = GetComponent<XRBaseInteractable>();
+        interactable = GetComponent<XRSimpleInteractable>();
         
-        // Listen for hover events to know when the ray is pointing at the button
-        interactable.hoverEntered.AddListener(OnHoverEntered);
-        interactable.hoverExited.AddListener(OnHoverExited);
+        // Listen for the Select event (triggered by Ray Interactor's Select Action, e.g., Trigger)
+        interactable.selectEntered.AddListener(OnSelectEntered);
     }
 
-    private void Update()
+    private void OnDestroy()
     {
-        // Check if we are hovering AND the trigger button is pressed
-        if (isHovering && checkoutInput.action != null && checkoutInput.action.WasPressedThisFrame())
+        if (interactable != null)
         {
-            PerformCheckout();
+            interactable.selectEntered.RemoveListener(OnSelectEntered);
         }
+    }
+
+    private void OnSelectEntered(SelectEnterEventArgs args)
+    {
+        // This method runs when the user clicks the trigger while pointing at this object
+        PerformCheckout();
     }
 
     private void PerformCheckout()
     {
         if (cartUIController != null)
         {
+            Debug.Log("Checkout Button Pressed!");
             cartUIController.OnCheckoutButtonClicked();
         }
         else
         {
             Debug.LogWarning("CartUIController is not assigned in CheckoutInteraction!");
         }
-    }
-
-    private void OnHoverEntered(HoverEnterEventArgs args)
-    {
-        isHovering = true;
-    }
-
-    private void OnHoverExited(HoverExitEventArgs args)
-    {
-        isHovering = false;
     }
 }
