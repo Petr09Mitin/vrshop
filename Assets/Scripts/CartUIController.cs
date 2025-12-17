@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 using TMPro;
 using System.Text;
@@ -7,6 +8,10 @@ public class CartUIController : MonoBehaviour
     [Header("UI References")]
     [SerializeField] private TextMeshProUGUI cartListText; // Обычный текст для списка (простой вариант)
     [SerializeField] private TextMeshProUGUI totalPriceText;
+    [SerializeField] private GameObject checkoutPopup;
+    [SerializeField] private TextMeshProUGUI checkoutPopupText;
+
+    private bool isCheckingOut = false;
 
     private void Start()
     {
@@ -29,10 +34,37 @@ public class CartUIController : MonoBehaviour
     // Метод для кнопки "Checkout" (назначить через инспектор Unity)
     public void OnCheckoutButtonClicked()
     {
+        if (isCheckingOut) return;
+
+        if (CartManager.Instance != null && CartManager.Instance.cartItems.Count > 0)
+        {
+            isCheckingOut = true;
+            float total = CartManager.Instance.GetTotalPrice();
+            StartCoroutine(ShowCheckoutPopupRoutine(total));
+        }
+    }
+
+    private IEnumerator ShowCheckoutPopupRoutine(float total)
+    {
+        if (checkoutPopup != null)
+        {
+            checkoutPopup.SetActive(true);
+            if (checkoutPopupText != null)
+            {
+                checkoutPopupText.text = $"Congrats with purchase: your total is ${total:F2}";
+            }
+
+            yield return new WaitForSeconds(5f);
+
+            checkoutPopup.SetActive(false);
+        }
+
         if (CartManager.Instance != null)
         {
             CartManager.Instance.Checkout();
         }
+
+        isCheckingOut = false;
     }
 
     private void UpdateUI()

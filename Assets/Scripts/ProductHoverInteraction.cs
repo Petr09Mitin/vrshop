@@ -74,10 +74,10 @@ public class ProductHoverInteraction : MonoBehaviour
             CartManager.Instance.AddToCart(data.productName, data.price);
 
             // Визуальный эффект подтверждения (пульсация окна)
-            if (currentPopup != null)
-            {
-                currentPopup.transform.localScale *= 1.1f;
-            }
+            // if (currentPopup != null)
+            // {
+            //     currentPopup.transform.localScale *= 1.1f;
+            // }
         }
     }
 }
