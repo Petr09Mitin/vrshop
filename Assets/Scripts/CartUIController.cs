@@ -48,17 +48,24 @@ public class CartUIController : MonoBehaviour
     {
         if (checkoutPopup != null)
         {
+            // 1. Activate
             checkoutPopup.SetActive(true);
+
+            // 2. Set Text
             if (checkoutPopupText != null)
             {
-                checkoutPopupText.text = $"Congrats with purchase: your total is ${total:F2}";
+                // Using Rich Text for better styling within the string
+                checkoutPopupText.text = $"<size=120%>Purchase Successful!</size>\n\nTotal Paid: <color=yellow>${total:F2}</color>";
             }
 
+            // 3. Wait
             yield return new WaitForSeconds(5f);
 
+            // 4. Deactivate
             checkoutPopup.SetActive(false);
         }
 
+        // 5. Clear Logic
         if (CartManager.Instance != null)
         {
             CartManager.Instance.Checkout();

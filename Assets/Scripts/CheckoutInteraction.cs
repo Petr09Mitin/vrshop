@@ -27,6 +27,9 @@ public class CheckoutInteraction : MonoBehaviour
 
     private void OnSelectEntered(SelectEnterEventArgs args)
     {
+        Debug.Log(">>> CLICK DETECTED ON BUTTON <<<");
+
+
         // This method runs when the user clicks the trigger while pointing at this object
         PerformCheckout();
     }

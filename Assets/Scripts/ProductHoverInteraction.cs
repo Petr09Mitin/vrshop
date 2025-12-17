@@ -72,12 +72,6 @@ public class ProductHoverInteraction : MonoBehaviour
         if (CartManager.Instance != null)
         {
             CartManager.Instance.AddToCart(data.productName, data.price);
-
-            // Визуальный эффект подтверждения (пульсация окна)
-            // if (currentPopup != null)
-            // {
-            //     currentPopup.transform.localScale *= 1.1f;
-            // }
         }
     }
 }
